@@ -28,11 +28,11 @@ export function SourceFolderDialog({
   return (
     <Dialog.Root open={open} onOpenChange={(next) => !next && onCancel()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-overlay bg-black/50 motion-safe:animate-[--animate-overlay-in]" />
+        <Dialog.Overlay className="fixed inset-0 z-overlay bg-overlay/60 motion-safe:animate-[--animate-overlay-in]" />
         <Dialog.Content
           className={cn(
             "fixed top-1/2 left-1/2 z-dialog w-[min(32rem,calc(100vw-2rem))]",
-            "-translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-surface shadow-xl",
+            "-translate-x-1/2 -translate-y-1/2 rounded-md border border-border bg-surface shadow-xl",
             "motion-safe:animate-[--animate-content-in]",
           )}
         >
@@ -54,7 +54,7 @@ export function SourceFolderDialog({
                     <button
                       type="button"
                       onClick={() => onPick(folder)}
-                      className="flex w-full items-center justify-between gap-4 rounded-md px-3 py-2 text-left hover:bg-border/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                      className="flex w-full items-center justify-between gap-4 rounded-md px-3 py-2 text-left hover:bg-border/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                     >
                       <span className="min-w-0">
                         <span className="block truncate text-sm">{folder.label}</span>
@@ -81,7 +81,7 @@ export function SourceFolderDialog({
           </ScrollArea.Root>
 
           <div className="flex justify-end border-t border-border px-5 py-3">
-            <Dialog.Close className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-border/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+            <Dialog.Close className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-border/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
               Cancel
             </Dialog.Close>
           </div>

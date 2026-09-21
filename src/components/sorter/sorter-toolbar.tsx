@@ -30,8 +30,9 @@ export function SorterToolbar({
 
   return (
     // Two groups under justify-between rather than one long row with ml-auto: when the row wraps,
-    // the actions move as a block instead of leaving a hole where the middle used to be.
-    <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3 rounded-xl border border-border bg-surface px-4 py-3">
+    // the actions move as a block instead of leaving a hole where the middle used to be. No card
+    // around it — a single rule underneath separates it from the list.
+    <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3 border-b border-border pb-4">
       <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
         {/*
           A ToggleGroup rather than Tabs: these filter the page itself, so there is no tab panel
@@ -43,7 +44,7 @@ export function SorterToolbar({
           value={tab}
           onValueChange={(value) => value && onTabChange(value as SorterTab)}
           aria-label="Filter bookmarks"
-          className="inline-flex rounded-lg bg-border/50 p-0.5"
+          className="inline-flex rounded-md border border-border p-0.5"
         >
           <FilterButton value="all" label="All" count={totalCount} />
           <FilterButton value="needs-look" label="Needs a look" count={needsLookCount} />
@@ -66,15 +67,14 @@ export function SorterToolbar({
             step={5}
             className="relative flex h-5 w-32 touch-none items-center select-none"
           >
-            <Slider.Track className="relative h-1 grow rounded-full bg-border">
-              {/* Neutral, not accent: the one accent in this view belongs to Export. */}
-              <Slider.Range className="absolute h-full rounded-full bg-muted" />
+            <Slider.Track className="relative h-px grow bg-border">
+              <Slider.Range className="absolute h-full bg-foreground" />
             </Slider.Track>
             <Slider.Thumb
               aria-labelledby="threshold-label"
               // Without this a screen reader announces a bare "60".
               aria-valuetext={`${percent} percent`}
-              className="block size-4 rounded-full border border-border bg-surface shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="block size-3 rounded-full bg-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             />
           </Slider.Root>
           {/* Fixed width and tabular figures, or the row twitches as you drag. */}
@@ -97,9 +97,9 @@ export function SorterToolbar({
           // A disabled control has to say why, or it reads as broken.
           aria-describedby={canExport ? undefined : "export-disabled"}
           className={cn(
-            "rounded-md bg-accent px-3 py-1.5 text-sm font-medium whitespace-nowrap text-white",
+            "rounded-md bg-primary px-3 py-1.5 text-sm font-medium whitespace-nowrap text-primary-foreground",
             "hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
-            "disabled:cursor-not-allowed disabled:opacity-50",
+            "disabled:cursor-not-allowed disabled:opacity-40",
           )}
         >
           Export bookmarks file
@@ -127,8 +127,8 @@ function FilterButton({
     <ToggleGroup.Item
       value={value}
       className={cn(
-        "group flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm whitespace-nowrap text-muted",
-        "data-[state=on]:bg-surface data-[state=on]:text-foreground data-[state=on]:shadow-sm",
+        "group flex items-center gap-1.5 rounded px-3 py-1 text-sm whitespace-nowrap text-muted",
+        "data-[state=on]:bg-border/60 data-[state=on]:text-foreground",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
       )}
     >

@@ -37,11 +37,11 @@ export function TopPicks({
             onClick={() => onPick(pick.folderId)}
             aria-pressed={isCurrent}
             className={cn(
-              "rounded-md border px-2 py-1 text-xs transition-colors",
-              "hover:border-foreground/30 hover:text-foreground",
+              "rounded border px-2 py-0.5 text-xs transition-colors",
+              "hover:border-muted hover:text-foreground",
               "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
               isCurrent
-                ? "border-foreground/30 text-foreground"
+                ? "border-muted text-foreground"
                 : "border-border text-muted",
             )}
           >

@@ -74,8 +74,8 @@ export function ImportStep({
           if (file) void handleFile(file);
         }}
         className={cn(
-          "mt-8 rounded-xl border border-dashed border-border bg-surface px-6 py-12",
-          dragging && "border-accent bg-border/30",
+          "mt-10 rounded-md border border-dashed border-border px-6 py-14",
+          dragging && "border-accent bg-border/40",
         )}
       >
         <p className="text-sm text-muted">Drop a bookmarks file here</p>
@@ -83,7 +83,7 @@ export function ImportStep({
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={reading}
-          className="mt-4 rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50"
+          className="mt-5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-40"
         >
           {reading ? "Reading file…" : "Choose a file"}
         </button>
@@ -106,7 +106,7 @@ export function ImportStep({
       </div>
 
       {error && (
-        <p role="alert" className="mt-4 text-sm text-warn text-pretty">
+        <p role="alert" className="mt-4 text-sm text-accent text-pretty">
           {error}
         </p>
       )}

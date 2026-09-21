@@ -66,11 +66,11 @@ export function TaxonomyDialog({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-overlay bg-black/50 motion-safe:animate-[--animate-overlay-in]" />
+        <Dialog.Overlay className="fixed inset-0 z-overlay bg-overlay/60 motion-safe:animate-[--animate-overlay-in]" />
         <Dialog.Content
           className={cn(
             "fixed top-1/2 left-1/2 z-dialog w-[min(44rem,calc(100vw-2rem))]",
-            "-translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-surface shadow-xl",
+            "-translate-x-1/2 -translate-y-1/2 rounded-md border border-border bg-surface shadow-xl",
             "motion-safe:animate-[--animate-content-in]",
           )}
         >
@@ -86,13 +86,13 @@ export function TaxonomyDialog({
             <ScrollArea.Viewport className="h-full w-full px-5">
               <ul className="space-y-3 pb-3">
                 {draft.map((folder, index) => (
-                  <li key={folder.id} className="rounded-lg border border-border p-3">
+                  <li key={folder.id} className="border-t border-border pt-3">
                     <div className="flex items-start gap-2">
                       <input
                         value={folder.name}
                         onChange={(event) => update(folder.id, { name: event.target.value })}
                         aria-label={`Folder ${index + 1} name`}
-                        className="min-w-0 flex-1 rounded-md border border-border bg-background px-2 py-1.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                        className="min-w-0 flex-1 rounded-md border border-border-strong bg-background px-2 py-1.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                       />
                       <IconButton
                         label={`Move ${folder.name} up`}
@@ -124,7 +124,7 @@ export function TaxonomyDialog({
                       rows={2}
                       aria-label={`What goes in ${folder.name}`}
                       placeholder="What goes in this folder?"
-                      className="mt-2 w-full resize-y rounded-md border border-border bg-background px-2 py-1.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                      className="mt-2 w-full resize-y rounded-md border border-border-strong bg-background px-2 py-1.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                     />
 
                     {folder.drawsFrom && folder.drawsFrom.length > 0 && (
@@ -148,12 +148,12 @@ export function TaxonomyDialog({
             <button
               type="button"
               onClick={addFolder}
-              className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-border/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-border/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               Add folder
             </button>
             <div className="ml-auto flex items-center gap-2">
-              <Dialog.Close className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-border/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+              <Dialog.Close className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-border/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
                 Cancel
               </Dialog.Close>
               <button
@@ -163,7 +163,7 @@ export function TaxonomyDialog({
                   onSave(draft.map((folder) => ({ ...folder, name: folder.name.trim() })));
                   onOpenChange(false);
                 }}
-                className="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-white hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50"
+                className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-40"
               >
                 Save folders
               </button>
@@ -177,11 +177,11 @@ export function TaxonomyDialog({
         onOpenChange={(next) => !next && setPendingDelete(undefined)}
       >
         <AlertDialog.Portal>
-          <AlertDialog.Overlay className="fixed inset-0 z-overlay bg-black/50" />
+          <AlertDialog.Overlay className="fixed inset-0 z-overlay bg-overlay/60" />
           <AlertDialog.Content
             className={cn(
               "fixed top-1/2 left-1/2 z-dialog w-[min(26rem,calc(100vw-2rem))]",
-              "-translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-surface p-5 shadow-xl",
+              "-translate-x-1/2 -translate-y-1/2 rounded-md border border-border bg-surface p-5 shadow-xl",
             )}
           >
             <AlertDialog.Title className="text-base font-medium text-balance">
@@ -192,7 +192,7 @@ export function TaxonomyDialog({
               here go back to unsorted, and you can sort again.
             </AlertDialog.Description>
             <div className="mt-4 flex justify-end gap-2">
-              <AlertDialog.Cancel className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-border/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+              <AlertDialog.Cancel className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-border/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
                 Keep it
               </AlertDialog.Cancel>
               <AlertDialog.Action
@@ -202,7 +202,7 @@ export function TaxonomyDialog({
                   );
                   setPendingDelete(undefined);
                 }}
-                className="rounded-md bg-warn px-3 py-1.5 text-sm font-medium text-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                className="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               >
                 Delete folder
               </AlertDialog.Action>

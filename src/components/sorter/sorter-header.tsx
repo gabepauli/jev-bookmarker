@@ -25,7 +25,7 @@ export function SorterHeader({
         </p>
 
         {session.mode === "sample" && (
-          <p className="mt-3 max-w-prose rounded-lg border border-warn/30 bg-warn-surface px-4 py-3 text-sm text-pretty">
+          <p className="mt-4 max-w-prose border-l-2 border-accent pl-3 text-sm text-pretty">
             <strong className="font-medium">Sample results.</strong> The titles are yours, but the
             folders and percentages come from a local stand-in, not from Jev. Nothing has been sent
             anywhere. Set <code className="font-mono text-xs">AI_GATEWAY_API_KEY</code> and sort

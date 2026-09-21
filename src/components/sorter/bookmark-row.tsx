@@ -4,7 +4,7 @@ import { memo, useCallback } from "react";
 import { Select, Tooltip } from "radix-ui";
 
 import { folderTrail, hostname } from "@/components/format";
-import { ConfidenceMeter } from "@/components/sorter/confidence-meter";
+import { Confidence } from "@/components/sorter/confidence";
 import { DRAG_MIME } from "@/components/sorter/drag";
 import { TopPicks } from "@/components/sorter/top-picks";
 import { cn } from "@/lib/cn";
@@ -68,9 +68,11 @@ function BookmarkRowImpl({
       draggable
       onDragStart={handleDragStart}
       className={cn(
-        "group grid gap-x-4 gap-y-2 border-t border-border px-4 py-3",
+        "group grid gap-x-4 gap-y-2 border-t border-border py-3",
         "grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto]",
-        needsLook && "bg-warn-surface",
+        // A rule in the margin rather than a filled row. At a high threshold well over half the
+        // list is flagged, and a fill turns the whole page orange; a 2px edge still scans in bulk.
+        needsLook ? "border-l-2 border-l-accent pl-3" : "pl-[calc(0.75rem+2px)]",
       )}
     >
       <div className="min-w-0">
@@ -80,9 +82,8 @@ function BookmarkRowImpl({
           rel="noreferrer"
           data-no-drag
           className={cn(
-            "block truncate text-sm underline-offset-4 hover:underline",
+            "block truncate text-sm text-foreground underline-offset-4 hover:underline",
             "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
-            needsLook ? "text-warn" : "text-foreground",
           )}
         >
           {bookmark.title}
@@ -115,7 +116,7 @@ function BookmarkRowImpl({
         </p>
 
         {item?.error && (
-          <p className="mt-2 flex flex-wrap items-center gap-2 text-xs text-warn text-pretty">
+          <p className="mt-2 flex flex-wrap items-center gap-2 text-xs text-accent text-pretty">
             {item.error}
             <button
               type="button"
@@ -142,10 +143,7 @@ function BookmarkRowImpl({
 
       <div className="flex items-center gap-3 justify-self-start sm:flex-col sm:items-end sm:justify-self-end sm:gap-1.5">
         {suggestion && !overridden && (
-          <ConfidenceMeter
-            confidence={suggestion.confidence}
-            belowThreshold={needsLook}
-          />
+          <Confidence confidence={suggestion.confidence} belowThreshold={needsLook} />
         )}
         <MoveSelect
           folders={folders}
@@ -172,13 +170,21 @@ function MoveSelect({
   return (
     <span data-no-drag>
       <Select.Root value={value ?? ""} onValueChange={onChange}>
+        {/*
+          Borderless until you reach for it. A bordered control repeated on every row is the
+          loudest thing in a list of a few hundred, and the row is already obviously interactive.
+          The outline comes back on hover and focus, so it is never hidden from the keyboard.
+        */}
         <Select.Trigger
           aria-label={`Move “${title}” to a folder`}
-          className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-2 py-1 text-xs text-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          className={cn(
+            "inline-flex items-center gap-1.5 rounded border border-transparent px-2 py-1 text-xs text-muted",
+            "hover:border-border hover:text-foreground",
+            "data-[state=open]:border-border data-[state=open]:text-foreground",
+            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+          )}
         >
-          <span aria-hidden className="text-muted/70">
-            In:
-          </span>
+          <span aria-hidden>In:</span>
           <span className="max-w-40 truncate">
             <Select.Value placeholder="nothing yet" />
           </span>
@@ -188,7 +194,7 @@ function MoveSelect({
           <Select.Content
             position="popper"
             sideOffset={4}
-            className="z-dropdown max-h-72 overflow-hidden rounded-lg border border-border bg-surface shadow-lg"
+            className="z-dropdown max-h-72 overflow-hidden rounded-md border border-border bg-surface shadow-lg"
           >
             <Select.Viewport className="p-1">
               {folders.map((folder) => (

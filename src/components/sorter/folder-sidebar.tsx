@@ -52,9 +52,9 @@ export function FolderSidebar({
                   if (id) onDropBookmark(id, folder.id);
                 }}
                 className={cn(
-                  "flex w-full items-center justify-between gap-3 rounded-md px-3 py-1.5 text-left text-sm",
-                  "hover:bg-border/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
-                  over === folder.id && "bg-border/60 ring-1 ring-accent",
+                  "flex w-full items-center justify-between gap-3 rounded px-2 py-1 text-left text-sm",
+                  "hover:bg-border/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+                  over === folder.id && "bg-border ring-1 ring-accent",
                 )}
               >
                 <span className="truncate">{folder.name}</span>
@@ -62,7 +62,7 @@ export function FolderSidebar({
                   {count.needsLook > 0 && (
                     <>
                       {/* aria-label on a bare span is ignored, so the text is real and hidden. */}
-                      <span aria-hidden className="size-1.5 rounded-full bg-warn" />
+                      <span aria-hidden className="size-1.5 rounded-full bg-accent" />
                       <span className="sr-only">
                         , {count.needsLook} needing a look
                       </span>
@@ -80,7 +80,7 @@ export function FolderSidebar({
             <button
               type="button"
               onClick={() => scrollToFolder(UNSORTED_ID)}
-              className="flex w-full items-center justify-between gap-3 rounded-md px-3 py-1.5 text-left text-sm text-muted hover:bg-border/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="flex w-full items-center justify-between gap-3 rounded px-2 py-1 text-left text-sm text-muted hover:bg-border/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               <span className="truncate">Not sorted yet</span>
               <span className="text-xs tabular-nums">{unsortedCount}</span>
@@ -89,7 +89,7 @@ export function FolderSidebar({
         )}
       </ul>
 
-      <p className="mt-4 px-3 text-xs text-muted text-pretty">
+      <p className="mt-5 px-2 text-xs text-muted text-pretty">
         Drag a bookmark onto a folder here, or use its Move menu.
       </p>
     </nav>

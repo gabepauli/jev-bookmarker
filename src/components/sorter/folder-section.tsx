@@ -31,16 +31,14 @@ export function FolderSection({
     <section
       id={`folder-${id}`}
       aria-labelledby={`folder-${id}-heading`}
-      className="section-defer scroll-mt-4 overflow-hidden rounded-xl border border-border bg-surface"
+      className="section-defer scroll-mt-4"
     >
-      <header className="px-4 py-3">
+      <header className="pb-2">
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <h2 id={`folder-${id}-heading`} className="text-sm font-medium text-balance">
             {name}
           </h2>
-          <span className="text-xs text-muted tabular-nums">
-            {bookmarks.length} {bookmarks.length === 1 ? "bookmark" : "bookmarks"}
-          </span>
+          <span className="text-xs text-muted tabular-nums">{bookmarks.length}</span>
         </div>
         {description && (
           <p className="mt-1 max-w-prose text-xs text-muted text-pretty">{description}</p>

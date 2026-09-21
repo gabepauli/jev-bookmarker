@@ -172,7 +172,7 @@ export function SorterApp({
       <SorterHeader session={session} modelId={modelId} onStartOver={handleStartOver} />
 
       {stale && (
-        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-warn/30 bg-warn-surface px-4 py-3">
+        <div className="flex flex-wrap items-center gap-3 border-l-2 border-accent pl-3">
           <p className="text-sm text-pretty">
             The folders changed, so what Jev suggested no longer matches them. Your own moves are
             kept.
@@ -180,7 +180,7 @@ export function SorterApp({
           <button
             type="button"
             onClick={() => void runClassification(session.bookmarks, session.folders)}
-            className="ml-auto rounded-md border border-border bg-surface px-3 py-1.5 text-sm hover:bg-border/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            className="ml-auto rounded-md border border-border px-3 py-1.5 text-sm hover:bg-border/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >
             Sort again
           </button>
@@ -219,7 +219,7 @@ export function SorterApp({
           onDropBookmark={handleDrop}
         />
 
-        <div className="min-w-0 space-y-4">
+        <div className="min-w-0 space-y-10">
           {session.folders.map((folder) => {
             const bookmarks = visible(groups.get(folder.id) ?? []);
             if (bookmarks.length === 0) return null;
@@ -255,7 +255,7 @@ export function SorterApp({
           )}
 
           {session.tab === "needs-look" && needsLookCount === 0 && (
-            <p className="rounded-xl border border-border bg-surface px-4 py-8 text-center text-sm text-muted text-pretty">
+            <p className="py-10 text-center text-sm text-muted text-pretty">
               Nothing needs a look at {Math.round(threshold * 100)}%. Raise the threshold to
               review more, or export the file.
             </p>

@@ -16,14 +16,14 @@ export function ClassifyProgress({
   const fraction = total === 0 ? 0 : done / total;
 
   return (
-    <div className="flex flex-wrap items-center gap-4 rounded-xl border border-border bg-surface px-4 py-3">
+    <div className="flex flex-wrap items-center gap-4 border-b border-border pb-4">
       <Progress.Root
         aria-label="Sorting progress"
         value={fraction * 100}
-        className="relative h-1.5 w-48 overflow-hidden rounded-full bg-border"
+        className="relative h-px w-48 overflow-hidden bg-border"
       >
         <Progress.Indicator
-          className="h-full rounded-full bg-accent transition-transform duration-200 ease-out"
+          className="h-full bg-foreground transition-transform duration-200 ease-out"
           style={{ transform: `translateX(-${100 - fraction * 100}%)` }}
         />
       </Progress.Root>
@@ -33,14 +33,14 @@ export function ClassifyProgress({
           {done} of {total}
         </span>
         {failed > 0 && (
-          <span className="text-warn"> · {failed} failed</span>
+          <span className="text-accent"> · {failed} failed</span>
         )}
       </p>
 
       <button
         type="button"
         onClick={onCancel}
-        className="ml-auto rounded-md border border-border px-3 py-1.5 text-sm hover:bg-border/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="ml-auto rounded-md border border-border px-3 py-1.5 text-sm hover:bg-border/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
         Stop
       </button>

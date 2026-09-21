@@ -36,7 +36,7 @@ export default function Inbox() {
       </header>
 
       {jevEnabled ? null : (
-        <p className="mt-6 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm">
+        <p className="mt-6 max-w-prose border-l-2 border-accent pl-3 text-sm text-pretty">
           <strong className="font-medium">Jev is not configured.</strong> Set{" "}
           <code className="font-mono text-xs">AI_GATEWAY_API_KEY</code> in{" "}
           <code className="font-mono text-xs">.env.local</code> to turn on classification.
