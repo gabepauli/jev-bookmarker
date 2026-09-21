@@ -110,6 +110,12 @@ export type ClassifierMode = "jev" | "sample" | "unknown";
 
 export type SortSession = {
   version: 1;
+  /**
+   * False until `localStorage` has been read after mount. Nothing renders from a session until
+   * this is true, or the first paint would show an empty state that immediately replaces itself.
+   * It lives in the session rather than beside it so restoring is a single dispatch.
+   */
+  hydrated: boolean;
   /** The chosen subtree's own name, e.g. "🧠 UX Links". */
   sourceLabel: string;
   sourceKey: string;
@@ -131,7 +137,8 @@ export type SortSession = {
 };
 
 export type SorterAction =
-  | { type: "session/restored"; session: SortSession }
+  /** Always dispatched once after mount; `session` is absent when storage held nothing. */
+  | { type: "session/restored"; session?: SortSession }
   | { type: "session/imported"; result: ImportResult; source: SourceFolder }
   | { type: "session/cleared" }
   | { type: "status/changed"; status: SorterStatus }

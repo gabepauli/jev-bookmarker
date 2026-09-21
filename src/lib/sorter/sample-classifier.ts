@@ -108,8 +108,14 @@ const BASE_SCORE = 0.4;
 const FOLDER_WEIGHT = 2.5;
 const TITLE_WEIGHT = 1;
 const URL_WEIGHT = 0.6;
-/** Sharpens the distribution. Higher makes the model look more certain than it is. */
-const TEMPERATURE = 3;
+/**
+ * Sharpens the distribution. Tuned against the real 259-bookmark set rather than picked: at 3
+ * the stand-in claimed 95%+ on 174 of them, which is not a believable thing for a keyword
+ * matcher that has never seen the page to say. At 1.4 the median lands near 0.78 and about a
+ * third fall under the default review threshold, which is roughly the review load the design
+ * assumes.
+ */
+const TEMPERATURE = 1.4;
 /** Spread of the deterministic per-URL wobble. See the note on `jitter` below. */
 const JITTER = 0.07;
 /**

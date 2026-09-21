@@ -7,6 +7,9 @@
   --muted: #6b6b76;
   --border: #e5e5ec;
   --accent: #4f46e5;
+  /* "Needs a look". The only other colour that carries meaning in the sorter. */
+  --warn: #b45309;
+  --warn-surface: #f59e0b1f;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -17,6 +20,8 @@
     --muted: #9a9aa8;
     --border: #26262f;
     --accent: #818cf8;
+    --warn: #fbbf24;
+    --warn-surface: #f59e0b1a;
   }
 }
 
@@ -27,6 +32,8 @@
   --color-muted: var(--muted);
   --color-border: var(--border);
   --color-accent: var(--accent);
+  --color-warn: var(--warn);
+  --color-warn-surface: var(--warn-surface);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
@@ -42,6 +49,26 @@
 @keyframes content-in {
   from { opacity: 0; transform: translate(-50%, -48%) scale(0.97); }
   to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/*
+ * One fixed z-index scale, so stacking is decided here rather than argued about per component.
+ * Radix portals its own overlays to the body, which is why the dialog sits above everything.
+ */
+@utility z-sticky { z-index: 10; }
+@utility z-dropdown { z-index: 20; }
+@utility z-overlay { z-index: 30; }
+@utility z-dialog { z-index: 40; }
+@utility z-tooltip { z-index: 50; }
+
+/*
+ * Folder sections are tall and mostly off-screen. This lets the browser skip layout and paint
+ * for the ones you cannot see. The intrinsic size keeps the scrollbar from jumping as they
+ * come into view.
+ */
+@utility section-defer {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 480px;
 }
 
 body {

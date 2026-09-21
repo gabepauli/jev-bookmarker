@@ -13,6 +13,7 @@ export function initialSession(): SortSession {
   const folders = [...DEFAULT_FOLDERS];
   return {
     version: 1,
+    hydrated: false,
     sourceLabel: "",
     sourceKey: "",
     createdAt: new Date().toISOString(),
@@ -104,10 +105,10 @@ export function suggestionsAreStale(session: SortSession): boolean {
 export function sorterReducer(state: SortSession, action: SorterAction): SortSession {
   switch (action.type) {
     case "session/restored":
-      return action.session;
+      return { ...(action.session ?? state), hydrated: true };
 
     case "session/cleared":
-      return initialSession();
+      return { ...initialSession(), hydrated: true, folders: state.folders };
 
     case "session/imported": {
       const items: Record<string, ItemState> = {};
