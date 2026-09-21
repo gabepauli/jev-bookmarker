@@ -9,13 +9,13 @@ import type { SortSession } from "@/lib/sorter/types";
 
 /** Where unplaced bookmarks go, so an export never silently loses one. */
 const LEFTOVER_FOLDER = "Still to sort";
-const PORTUGUESE_FOLDER = "Português";
 
 /**
  * Turns the session into the groups an export is written from.
  *
- * Portuguese grouping is applied here rather than in the reducer: it is a decision about how the
- * file is laid out, not about where a bookmark belongs, so toggling it never disturbs a placement.
+ * Language is not one of them. Portuguese bookmarks are filed by topic like everything else —
+ * the badge on a row tells you what language it is in, which is all that was ever useful about
+ * knowing.
  */
 export function buildExportGroups(session: SortSession): ExportGroup[] {
   const byFolder = new Map<string, ExportGroup>();
@@ -27,31 +27,15 @@ export function buildExportGroups(session: SortSession): ExportGroup[] {
     });
   }
 
-  const portuguese: ExportGroup = { name: PORTUGUESE_FOLDER, bookmarks: [] };
   const leftover: ExportGroup = { name: LEFTOVER_FOLDER, bookmarks: [] };
 
   for (const bookmark of session.bookmarks) {
     const folderId = effectiveFolder(session.items[bookmark.id]);
     const group = folderId ? byFolder.get(folderId) : undefined;
-
-    if (!group) {
-      leftover.bookmarks.push(bookmark);
-      continue;
-    }
-
-    // Routing outcomes stay where they are: sending "Not design" to a language folder would
-    // hide the decision the user just made about it.
-    const routed = group.sibling === true;
-    if (session.portugueseMode === "group" && bookmark.isPortuguese && !routed) {
-      portuguese.bookmarks.push(bookmark);
-      continue;
-    }
-
-    group.bookmarks.push(bookmark);
+    (group ?? leftover).bookmarks.push(bookmark);
   }
 
   const groups = [...byFolder.values()];
-  if (portuguese.bookmarks.length > 0) groups.push(portuguese);
   if (leftover.bookmarks.length > 0) groups.push(leftover);
   return groups;
 }

@@ -103,7 +103,6 @@ export type ItemState = {
   error?: string;
 };
 
-export type PortugueseMode = "mix" | "group";
 export type SorterTab = "all" | "needs-look";
 export type SorterStatus = "empty" | "parsing" | "picking" | "classifying" | "ready";
 export type ClassifierMode = "jev" | "sample" | "unknown";
@@ -129,7 +128,6 @@ export type SortSession = {
   duplicates: DuplicateRecord[];
   /** 0–1. Below this, a bookmark needs a look. */
   threshold: number;
-  portugueseMode: PortugueseMode;
   tab: SorterTab;
   status: SorterStatus;
   mode: ClassifierMode;
@@ -148,6 +146,5 @@ export type SorterAction =
   | { type: "item/assigned"; id: string; folderId: string }
   | { type: "item/reset"; id: string }
   | { type: "threshold/changed"; value: number }
-  | { type: "portuguese/changed"; mode: PortugueseMode }
   | { type: "tab/changed"; tab: SorterTab }
   | { type: "folders/changed"; folders: TargetFolder[] };

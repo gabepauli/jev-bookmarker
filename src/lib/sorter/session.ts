@@ -23,7 +23,6 @@ export function initialSession(): SortSession {
     taxonomyHash: taxonomyHash(folders),
     duplicates: [],
     threshold: DEFAULT_THRESHOLD,
-    portugueseMode: "mix",
     tab: "all",
     status: "empty",
     mode: "unknown",
@@ -190,9 +189,6 @@ export function sorterReducer(state: SortSession, action: SorterAction): SortSes
 
     case "threshold/changed":
       return { ...state, threshold: action.value };
-
-    case "portuguese/changed":
-      return { ...state, portugueseMode: action.mode };
 
     case "tab/changed":
       return { ...state, tab: action.tab };

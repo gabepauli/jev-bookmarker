@@ -141,11 +141,6 @@ export function SorterApp({
         .length,
     [session.bookmarks, session.items, threshold],
   );
-  const portugueseCount = useMemo(
-    () => session.bookmarks.filter((bookmark) => bookmark.isPortuguese).length,
-    [session.bookmarks],
-  );
-
   const stale = useMemo(() => suggestionsAreStale(session), [session]);
 
   if (!session.hydrated) return null;
@@ -199,9 +194,6 @@ export function SorterApp({
         needsLookCount={needsLookCount}
         threshold={session.threshold}
         onThresholdChange={(value) => dispatch({ type: "threshold/changed", value })}
-        portugueseMode={session.portugueseMode}
-        onPortugueseChange={(mode) => dispatch({ type: "portuguese/changed", mode })}
-        portugueseCount={portugueseCount}
         onExport={() => downloadExport(session)}
         onEditFolders={() => setEditingFolders(true)}
         canExport={session.status !== "classifying"}

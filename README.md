@@ -43,6 +43,10 @@ against the old wording and offers a re-sort; your manual moves are never discar
 Two target folders are routing decisions rather than topics — *Move to UI Links* and *Not design*
 — and are written beside the sorted folder rather than inside it.
 
+Bookmarks in other languages are filed by topic like everything else. A `PT` badge on the row
+tells you what you are looking at, and the summary line counts them, but language never changes
+where something lands.
+
 ### What it does to your data
 
 Parsing happens in the browser and the file is never uploaded; only a URL, a title, and a folder
