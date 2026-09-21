@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "jev:smoke": "tsx scripts/jev-smoke.ts"
+    "jev:smoke": "tsx scripts/jev-smoke.ts",
+    "jev:folder-smoke": "tsx scripts/jev-folder-smoke.ts",
+    "parse:smoke": "tsx scripts/parse-smoke.ts"
   },
   "dependencies": {
     "@ai-sdk/gateway": "^4.0.87",
@@ -25,6 +27,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "esbuild": "^0.28.2",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
     "tailwindcss": "^4",

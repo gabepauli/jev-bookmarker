@@ -74,7 +74,7 @@ export async function addBookmarkAction(
   const result = await classifyOrExplain({ url, title, excerpt });
 
   persist({ url, title, excerpt, ...result });
-  revalidatePath("/");
+  revalidatePath("/inbox");
   return { ok: true };
 }
 
@@ -92,10 +92,10 @@ export async function reclassifyBookmarkAction(id: string): Promise<void> {
     classification: result.classification,
     classificationError: result.classificationError,
   });
-  revalidatePath("/");
+  revalidatePath("/inbox");
 }
 
 export async function deleteBookmarkAction(id: string): Promise<void> {
   remove(id);
-  revalidatePath("/");
+  revalidatePath("/inbox");
 }
