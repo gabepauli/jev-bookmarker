@@ -18,6 +18,7 @@ export function ClassifyProgress({
   return (
     <div className="flex flex-wrap items-center gap-4 rounded-xl border border-border bg-surface px-4 py-3">
       <Progress.Root
+        aria-label="Sorting progress"
         value={fraction * 100}
         className="relative h-1.5 w-48 overflow-hidden rounded-full bg-border"
       >

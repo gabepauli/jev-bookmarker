@@ -91,6 +91,7 @@ export function ImportStep({
           ref={inputRef}
           type="file"
           accept=".html,.htm,text/html"
+          aria-label="Bookmarks file"
           className="sr-only"
           onChange={(event) => {
             const file = event.target.files?.[0];

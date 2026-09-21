@@ -1,6 +1,6 @@
 "use client";
 
-import { Select, Slider, Tabs } from "radix-ui";
+import { Select, Slider, ToggleGroup } from "radix-ui";
 
 import { cn } from "@/lib/cn";
 import type { PortugueseMode, SorterTab } from "@/lib/sorter/types";
@@ -39,22 +39,27 @@ export function SorterToolbar({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-x-6 gap-y-4 rounded-xl border border-border bg-surface p-4">
-      <Tabs.Root value={tab} onValueChange={(value) => onTabChange(value as SorterTab)}>
-        <Tabs.List
-          aria-label="Filter bookmarks"
-          className="inline-flex rounded-lg bg-border/50 p-0.5"
-        >
-          <TabTrigger value="all" label={`All (${totalCount})`} />
-          <TabTrigger value="needs-look" label={`Needs a look (${needsLookCount})`} />
-        </Tabs.List>
-      </Tabs.Root>
+      {/*
+        A ToggleGroup rather than Tabs: these filter the page itself, so there is no tab panel
+        to point at, and Radix Tabs would emit an aria-controls referencing an element that does
+        not exist. Arrow-key navigation is the same either way.
+      */}
+      <ToggleGroup.Root
+        type="single"
+        value={tab}
+        onValueChange={(value) => value && onTabChange(value as SorterTab)}
+        aria-label="Filter bookmarks"
+        className="inline-flex rounded-lg bg-border/50 p-0.5"
+      >
+        <FilterButton value="all" label={`All (${totalCount})`} />
+        <FilterButton value="needs-look" label={`Needs a look (${needsLookCount})`} />
+      </ToggleGroup.Root>
 
       <div className="flex items-center gap-3">
-        <label htmlFor="threshold" className="text-sm text-muted">
+        <span id="threshold-label" className="text-sm text-muted">
           Ask me when Jev is under
-        </label>
+        </span>
         <Slider.Root
-          id="threshold"
           value={[Math.round(threshold * 100)]}
           onValueChange={([value]) => onThresholdChange(value / 100)}
           min={0}
@@ -66,7 +71,9 @@ export function SorterToolbar({
             <Slider.Range className="absolute h-full rounded-full bg-accent" />
           </Slider.Track>
           <Slider.Thumb
-            aria-label="Confidence threshold"
+            aria-labelledby="threshold-label"
+            // Without this a screen reader announces a bare "60".
+            aria-valuetext={`${Math.round(threshold * 100)} percent`}
             className="block size-4 rounded-full border border-border bg-surface shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           />
         </Slider.Root>
@@ -122,6 +129,8 @@ export function SorterToolbar({
           type="button"
           onClick={onExport}
           disabled={!canExport}
+          // A disabled control has to say why, or it reads as broken.
+          aria-describedby={canExport ? undefined : "export-disabled"}
           className={cn(
             "rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-white",
             "hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
@@ -130,22 +139,27 @@ export function SorterToolbar({
         >
           Export bookmarks file
         </button>
+        {!canExport && (
+          <span id="export-disabled" className="sr-only">
+            Available once sorting finishes.
+          </span>
+        )}
       </div>
     </div>
   );
 }
 
-function TabTrigger({ value, label }: { value: SorterTab; label: string }) {
+function FilterButton({ value, label }: { value: SorterTab; label: string }) {
   return (
-    <Tabs.Trigger
+    <ToggleGroup.Item
       value={value}
       className={cn(
         "rounded-md px-3 py-1.5 text-sm text-muted",
-        "data-[state=active]:bg-surface data-[state=active]:text-foreground data-[state=active]:shadow-sm",
+        "data-[state=on]:bg-surface data-[state=on]:text-foreground data-[state=on]:shadow-sm",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
       )}
     >
       {label}
-    </Tabs.Trigger>
+    </ToggleGroup.Item>
   );
 }

@@ -60,10 +60,13 @@ export function FolderSidebar({
                 <span className="truncate">{folder.name}</span>
                 <span className="flex shrink-0 items-center gap-1.5">
                   {count.needsLook > 0 && (
-                    <span
-                      aria-label={`${count.needsLook} need a look`}
-                      className="size-1.5 rounded-full bg-warn"
-                    />
+                    <>
+                      {/* aria-label on a bare span is ignored, so the text is real and hidden. */}
+                      <span aria-hidden className="size-1.5 rounded-full bg-warn" />
+                      <span className="sr-only">
+                        , {count.needsLook} needing a look
+                      </span>
+                    </>
                   )}
                   <span className="text-xs text-muted tabular-nums">{count.total}</span>
                 </span>

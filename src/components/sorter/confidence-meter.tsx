@@ -49,7 +49,9 @@ export function ConfidenceMeter({
       >
         {percent(confidence)} sure
       </span>
+      {/* The percentage beside it already says this; a second announcement is just noise. */}
       <Progress.Root
+        aria-hidden
         value={confidence * 100}
         className="relative h-1 w-14 overflow-hidden rounded-full bg-border"
       >
