@@ -9,14 +9,6 @@ import {
   priorityLabel,
 } from "@/lib/types";
 
-const CATEGORY_STYLES: Record<Classification["category"], string> = {
-  engineering: "bg-sky-500/12 text-sky-700 dark:text-sky-300",
-  design: "bg-fuchsia-500/12 text-fuchsia-700 dark:text-fuchsia-300",
-  business: "bg-amber-500/12 text-amber-700 dark:text-amber-300",
-  science: "bg-emerald-500/12 text-emerald-700 dark:text-emerald-300",
-  other: "bg-slate-500/12 text-slate-700 dark:text-slate-300",
-};
-
 function Hint({
   children,
   label,
@@ -62,9 +54,9 @@ export function JevVerdict({
             : `Jev's confidence in "${category}": ${(categoryConfidence * 100).toFixed(1)}%`
         }
       >
-        <span
-          className={`inline-flex cursor-default items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${CATEGORY_STYLES[category]}`}
-        >
+        {/* One neutral chip rather than a hue per category: the label already names the
+            category, and five unrelated colours were the loudest thing on the page. */}
+        <span className="inline-flex cursor-default items-center rounded border border-border px-2 py-0.5 text-xs font-medium capitalize">
           {category}
         </span>
       </Hint>
@@ -78,7 +70,7 @@ export function JevVerdict({
             className="relative h-1.5 w-20 overflow-hidden rounded-full bg-border"
           >
             <Progress.Indicator
-              className="h-full rounded-full bg-accent transition-transform"
+              className="h-full rounded-full bg-foreground transition-transform"
               style={{ transform: `translateX(-${100 - fraction * 100}%)` }}
             />
           </Progress.Root>

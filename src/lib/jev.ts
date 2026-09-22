@@ -3,6 +3,13 @@ import "server-only";
 import { gateway } from "@ai-sdk/gateway";
 import { experimental_evaluate as evaluate } from "ai";
 
+import { DISTRIBUTION_SIZE } from "@/lib/sorter/sample-classifier";
+import { buildCriteria, FALLBACK_FOLDER_ID } from "@/lib/sorter/taxonomy";
+import type {
+  ClassifyRequestItem,
+  FolderSuggestion,
+  TargetFolder,
+} from "@/lib/sorter/types";
 import {
   type Category,
   type Classification,
@@ -103,4 +110,72 @@ export async function classifyBookmark(
 
 export function isLongForm(probability: number): boolean {
   return probability > LONG_FORM_THRESHOLD;
+}
+
+/**
+ * Asks Jev which of the user's folders a bookmark belongs in.
+ *
+ * Unlike `classifyBookmark`, the criteria here are built at runtime from a taxonomy the user can
+ * edit, which costs the literal-type narrowing the other call site relies on: `answers.folder.choice`
+ * comes back as a plain `string`, not a union of the folder ids. So the answer is validated
+ * against the live taxonomy before it is trusted, and an unrecognized id falls back rather than
+ * flowing into state as a folder that does not exist.
+ *
+ * The state is deliberately just the URL, the title and the folder the bookmark already lived in.
+ * Fetching each page for an excerpt would add a network round trip per bookmark for a signal
+ * weaker than the folder the user themselves filed it under.
+ */
+export async function classifyPlacement(
+  item: ClassifyRequestItem,
+  folders: TargetFolder[],
+): Promise<FolderSuggestion> {
+  if (!isJevConfigured()) {
+    throw new JevUnavailableError(
+      "AI_GATEWAY_API_KEY is not set, so bookmarks cannot be sorted by Jev.",
+    );
+  }
+  if (folders.length === 0) {
+    throw new Error("Cannot classify into an empty taxonomy.");
+  }
+
+  const { answers, response } = await evaluate({
+    model: gateway.evaluation(JEV_MODEL_ID),
+    state: {
+      url: item.url,
+      title: item.title,
+      previousFolder: item.originalFolder,
+    },
+    questions: {
+      folder: {
+        type: "choice",
+        instructions:
+          "Which single folder should this bookmark be filed in? The bookmark's previous folder is a strong hint but is often wrong or too general — prefer the folder that matches what the page is actually about.",
+        criteria: buildCriteria(folders),
+      },
+    },
+  });
+
+  const known = new Set(folders.map((folder) => folder.id));
+  const chosen = known.has(answers.folder.choice)
+    ? answers.folder.choice
+    : FALLBACK_FOLDER_ID;
+
+  // `probabilities` is optional on a choice answer. Everything downstream renders an explicit
+  // "no distribution" state rather than a NaN percentage, so leave it undefined when absent.
+  const probabilities = answers.folder.probabilities;
+  const distribution = probabilities
+    ? Object.entries(probabilities)
+        .filter(([folderId]) => known.has(folderId))
+        .map(([folderId, p]) => ({ folderId, p }))
+        .sort((a, b) => b.p - a.p)
+        .slice(0, DISTRIBUTION_SIZE)
+    : undefined;
+
+  return {
+    folderId: chosen,
+    confidence: probabilities?.[chosen],
+    distribution,
+    source: "jev",
+    modelId: response.modelId,
+  };
 }

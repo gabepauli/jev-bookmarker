@@ -8,16 +8,20 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "jev:smoke": "tsx scripts/jev-smoke.ts"
+    "jev:smoke": "tsx scripts/jev-smoke.ts",
+    "jev:folder-smoke": "tsx scripts/jev-folder-smoke.ts",
+    "parse:smoke": "tsx scripts/parse-smoke.ts"
   },
   "dependencies": {
     "@ai-sdk/gateway": "^4.0.87",
     "ai": "^7.0.107",
+    "clsx": "^2.1.1",
     "next": "16.3.5",
     "radix-ui": "^1.6.7",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "server-only": "^0.0.1",
+    "tailwind-merge": "^3.7.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {
@@ -25,6 +29,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "esbuild": "^0.28.2",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
     "tailwindcss": "^4",

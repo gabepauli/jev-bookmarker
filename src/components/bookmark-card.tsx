@@ -13,7 +13,7 @@ export function BookmarkCard({ bookmark }: { bookmark: Bookmark }) {
 
   return (
     <li
-      className={`rounded-xl border border-border bg-surface p-4 transition-opacity ${
+      className={`rounded-md border border-border p-4 transition-opacity ${
         pending ? "opacity-50" : ""
       }`}
     >

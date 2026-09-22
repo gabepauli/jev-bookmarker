@@ -12,7 +12,7 @@ function SubmitButton({ jevEnabled }: { jevEnabled: boolean }) {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+      className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
     >
       {pending ? (jevEnabled ? "Asking Jev…" : "Saving…") : "Save bookmark"}
     </button>
@@ -99,12 +99,12 @@ export function AddBookmarkDialog({ jevEnabled }: { jevEnabled: boolean }) {
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
-      <Dialog.Trigger className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90">
+      <Dialog.Trigger className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90">
         Add bookmark
       </Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] animate-overlay-in" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-surface p-6 shadow-2xl animate-content-in">
+        <Dialog.Overlay className="fixed inset-0 z-40 bg-overlay/60 backdrop-blur-[2px] animate-overlay-in" />
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-md border border-border bg-surface p-6 shadow-xl animate-content-in">
           <Dialog.Title className="text-lg font-semibold">
             Add a bookmark
           </Dialog.Title>

@@ -25,3 +25,18 @@ export function hostname(url: string): string {
     return url;
   }
 }
+
+/** A probability as a whole percent. Pair with `tabular-nums` so the column does not jitter. */
+export function percent(probability: number): string {
+  return `${Math.round(probability * 100)}%`;
+}
+
+/**
+ * Shortens a deep folder trail from the middle, keeping the first and last segments — those are
+ * the two that tell you where a bookmark came from.
+ */
+export function folderTrail(trail: string, maxSegments = 3): string {
+  const segments = trail.split(" / ");
+  if (segments.length <= maxSegments) return trail;
+  return `${segments[0]} / … / ${segments[segments.length - 1]}`;
+}

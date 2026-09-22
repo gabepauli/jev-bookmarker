@@ -1,24 +1,54 @@
 @import "tailwindcss";
 
+/*
+ * Tailwind's stone scale, with orange as the one accent.
+ *
+ * Orange means exactly one thing here — this needs your attention — so it appears on flagged
+ * rows, low confidences, the sidebar dots and focus rings, and nowhere else. The primary button
+ * is neutral, which is what keeps the accent worth noticing.
+ *
+ * Every value below was picked against a contrast check rather than by eye; the ratios are the
+ * measured ones. Two obvious-looking choices failed and are not here: `muted` at stone-500 scores
+ * 4.59 on stone-50, too tight for the 12px text it carries, and attention at orange-600 scores
+ * 3.41, which is not a legible body colour.
+ */
 :root {
-  --background: #fbfbfd;
-  --surface: #ffffff;
-  --foreground: #16161a;
-  --muted: #6b6b76;
-  --border: #e5e5ec;
-  --accent: #4f46e5;
+  --background: #fafaf9; /* stone-50 */
+  --surface: #ffffff; /* dialogs and menus only — the page itself has no cards */
+  --foreground: #1c1917; /* stone-900   16.74:1 */
+  --muted: #57534e; /* stone-600    7.30:1 */
+  --border: #e7e5e4; /* stone-200 — hairlines, dividers, buttons that carry a label */
+  --border-strong: #78716c; /* stone-500    4.59:1 — see the note below */
+  --accent: #c2410c; /* orange-700   4.96:1 */
+  --primary: #1c1917; /* stone-900 */
+  --primary-foreground: #fafaf9;
+  --overlay: #0c0a09; /* stone-950, used at low opacity behind dialogs */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0b0b0f;
-    --surface: #15151b;
-    --foreground: #ededf2;
-    --muted: #9a9aa8;
-    --border: #26262f;
-    --accent: #818cf8;
+    --background: #0c0a09; /* stone-950 */
+    --surface: #1c1917; /* stone-900 */
+    --foreground: #fafaf9; /* stone-50   18.92:1 */
+    --muted: #a8a29e; /* stone-400    7.83:1 */
+    --border: #292524; /* stone-800 */
+    --border-strong: #78716c; /* stone-500    4.12:1 */
+    --accent: #f97316; /* orange-500   7.05:1 */
+    --primary: #fafaf9; /* stone-50 */
+    --primary-foreground: #1c1917;
+    --overlay: #0c0a09;
   }
 }
+
+/*
+ * Two border tokens, because with the fills stripped out borders do real work.
+ *
+ * A button carries a text label, so its outline is a hint and a hairline is enough. An empty text
+ * input has nothing but its outline, so that outline is the control and has to clear 3:1. Only
+ * stone-500 and darker manages that in both schemes — stone-400 on stone-50 is 2.41, stone-600 on
+ * stone-950 is 2.59 — which is why one value serves both. Use `border-strong` on inputs and
+ * textareas, `border` everywhere else.
+ */
 
 @theme inline {
   --color-background: var(--background);
@@ -26,7 +56,11 @@
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-accent: var(--accent);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-overlay: var(--overlay);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
@@ -42,6 +76,26 @@
 @keyframes content-in {
   from { opacity: 0; transform: translate(-50%, -48%) scale(0.97); }
   to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/*
+ * One fixed z-index scale, so stacking is decided here rather than argued about per component.
+ * Radix portals its own overlays to the body, which is why the dialog sits above everything.
+ */
+@utility z-sticky { z-index: 10; }
+@utility z-dropdown { z-index: 20; }
+@utility z-overlay { z-index: 30; }
+@utility z-dialog { z-index: 40; }
+@utility z-tooltip { z-index: 50; }
+
+/*
+ * Folder sections are tall and mostly off-screen. This lets the browser skip layout and paint
+ * for the ones you cannot see. The intrinsic size keeps the scrollbar from jumping as they
+ * come into view.
+ */
+@utility section-defer {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 480px;
 }
 
 body {
