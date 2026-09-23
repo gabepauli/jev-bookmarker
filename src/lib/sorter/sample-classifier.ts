@@ -104,7 +104,16 @@ const HINTS: Record<string, string[]> = {
 
 /** Every folder starts here, so an unmatched bookmark spreads rather than snapping to one. */
 const BASE_SCORE = 0.4;
-/** The original folder is the strongest signal available, so it outweighs the title. */
+/**
+ * The original folder is the strongest signal available *to a keyword matcher*, so it outweighs
+ * the title.
+ *
+ * Note this diverges from `classifyPlacement`, which stops sending the previous folder to Jev on
+ * purpose. That is not an oversight to reconcile: Jev reads the page's URL and title with actual
+ * knowledge behind it, while this has nothing but string matching, and `TEMPERATURE` below was
+ * calibrated with this weight in place. Removing it flattens the distribution and stops anything
+ * falling under the review threshold, which is most of what sample mode exists to demonstrate.
+ */
 const FOLDER_WEIGHT = 2.5;
 const TITLE_WEIGHT = 1;
 const URL_WEIGHT = 0.6;

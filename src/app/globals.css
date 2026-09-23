@@ -95,7 +95,7 @@
  */
 @utility section-defer {
   content-visibility: auto;
-  contain-intrinsic-size: auto 480px;
+  contain-intrinsic-size: auto 640px;
 }
 
 body {

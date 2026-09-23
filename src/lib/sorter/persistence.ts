@@ -11,7 +11,12 @@ import type { FolderSuggestion, SortSession } from "@/lib/sorter/types";
  */
 
 const SESSION_KEY = "jev-sorter:session:v1";
-const CACHE_KEY = "jev-sorter:cache:v1";
+/**
+ * Bumped to v2 when Jev stopped being sent the bookmark's previous folder. Every v1 entry was
+ * produced against a different input, and `taxonomyHash` covers only the folder list, so nothing
+ * else would notice they were stale.
+ */
+const CACHE_KEY = "jev-sorter:cache:v2";
 
 /** Suggestions to keep across sessions. Roughly a dozen imports' worth. */
 const CACHE_LIMIT = 2000;
@@ -49,10 +54,14 @@ export function loadSession(): SortSession | undefined {
   const stored = read<SortSession>(SESSION_KEY);
   if (!stored || stored.version !== 1 || !Array.isArray(stored.bookmarks)) return undefined;
 
-  // A session saved mid-run would come back stuck on a progress bar that will never move.
-  return stored.status === "classifying"
-    ? { ...stored, status: "ready" }
-    : stored;
+  // A session saved mid-run would come back stuck on a progress bar that will never move — and
+  // on a run with no end, so its elapsed clock would read as time since yesterday.
+  if (stored.status !== "classifying") return stored;
+  return {
+    ...stored,
+    status: "ready",
+    run: stored.run ? { ...stored.run, finishedAt: stored.run.finishedAt ?? Date.now() } : undefined,
+  };
 }
 
 export function clearSession(): void {

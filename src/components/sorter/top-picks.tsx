@@ -26,7 +26,7 @@ export function TopPicks({
   if (picks.length < 2) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-2" data-no-drag>
+    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-2" data-no-drag>
       <span className="text-xs text-muted">Top picks:</span>
       {picks.map((pick) => {
         const isCurrent = pick.folderId === current;
@@ -37,7 +37,7 @@ export function TopPicks({
             onClick={() => onPick(pick.folderId)}
             aria-pressed={isCurrent}
             className={cn(
-              "rounded border px-2 py-0.5 text-xs transition-colors",
+              "rounded border px-2.5 py-1 text-xs transition-colors",
               "hover:border-muted hover:text-foreground",
               "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
               isCurrent
@@ -45,8 +45,10 @@ export function TopPicks({
                 : "border-border text-muted",
             )}
           >
-            {folderName(folders, pick.folderId)}{" "}
-            <span className="tabular-nums">{percent(pick.p)}</span>
+            {folderName(folders, pick.folderId)}
+            {/* Real space rather than a word gap: the name and the odds are two facts, and
+                dimming the number instead would put 12px text under the contrast floor. */}
+            <span className="ms-2 tabular-nums">{percent(pick.p)}</span>
           </button>
         );
       })}

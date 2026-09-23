@@ -130,8 +130,24 @@ export const SIBLING_FOLDER_IDS: readonly string[] = [
   "not-design",
 ];
 
-/** Where a bookmark lands when Jev names a folder that no longer exists. */
+/**
+ * Where a bookmark lands when Jev names a folder that no longer exists.
+ *
+ * Only meaningful for the default taxonomy. Anything that has a live folder list in hand should
+ * call `fallbackFolderId` instead — an uploaded taxonomy will not contain this id, and stamping
+ * an item with an id nothing recognises sends it silently to "Still to sort" on export.
+ */
 export const FALLBACK_FOLDER_ID = "not-design";
+
+/**
+ * The folder to fall back on within a given taxonomy: the designated one if it survived, else the
+ * last in the list. Mirrors what the `folders/changed` reducer does when a folder is deleted.
+ */
+export function fallbackFolderId(folders: TargetFolder[]): string {
+  const live = new Set(folders.map((folder) => folder.id));
+  if (live.has(FALLBACK_FOLDER_ID)) return FALLBACK_FOLDER_ID;
+  return folders[folders.length - 1]?.id ?? FALLBACK_FOLDER_ID;
+}
 
 export function slugify(name: string): string {
   const base = name
@@ -152,6 +168,18 @@ export function uniqueFolderId(name: string, folders: TargetFolder[]): string {
   while (taken.has(`${base}-${n}`)) n += 1;
   return `${base}-${n}`;
 }
+
+/**
+ * The instruction for Jev's folder question.
+ *
+ * Lives here rather than in `jev.ts` because `jev.ts` is `server-only` and the folder smoke
+ * script cannot import it. It used to be copied into both, which is how the copy in the script
+ * ended up describing a prompt the app had stopped sending.
+ *
+ * No mention of a previous folder: `classifyPlacement` deliberately does not send one.
+ */
+export const FOLDER_QUESTION_INSTRUCTIONS =
+  "Which single folder should this bookmark be filed in? Judge by what the page is actually about, reading the URL as well as the title — the title alone is often a publication name or a truncated headline.";
 
 /**
  * The `criteria` object for Jev's `choice` question: id → the prose it evaluates against.

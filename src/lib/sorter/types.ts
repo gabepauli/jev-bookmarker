@@ -23,7 +23,10 @@ export type ParsedBookmark = {
   addDate?: string;
   /** Full path from the document root. */
   path: FolderPath;
-  /** Path below the chosen subtree root, joined with " / ". Shown as "Was in …", sent to Jev. */
+  /**
+   * Path below the chosen subtree root, joined with " / ". Shown as "Was in …" on the row, and
+   * scored by the local stand-in. Deliberately *not* sent to Jev — see `classifyPlacement`.
+   */
   originalFolder: string;
   isPortuguese: boolean;
 };
@@ -53,7 +56,13 @@ export type FolderSuggestion = {
   modelId?: string;
 };
 
-/** What the classifier sees. Deliberately no page excerpt — see `sample-classifier.ts`. */
+/**
+ * What the classifier sees. Deliberately no page excerpt — see `sample-classifier.ts`.
+ *
+ * `originalFolder` looks unused now that Jev no longer reads it, but the local stand-in weights
+ * it above the title, so removing it would gut sample mode. It travels; only `classifyPlacement`
+ * declines to pass it on.
+ */
 export type ClassifyRequestItem = {
   id: string;
   url: string;
@@ -62,7 +71,12 @@ export type ClassifyRequestItem = {
 };
 
 export type ClassifyResultItem =
-  | { id: string; ok: true; suggestion: FolderSuggestion }
+  /**
+   * `ms` is how long the classifier took on this one item, set only when a call was actually
+   * made. A cache hit and the local stand-in both leave it undefined, which is what keeps them
+   * out of the average without any separate bookkeeping.
+   */
+  | { id: string; ok: true; suggestion: FolderSuggestion; ms?: number }
   | { id: string; ok: false; error: string };
 
 export type ClassifyBatchResult = {
@@ -103,6 +117,24 @@ export type ItemState = {
   error?: string;
 };
 
+/**
+ * Timing for the most recent sorting run.
+ *
+ * Two different clocks, deliberately. `startedAt`/`finishedAt` are wall time — what you waited.
+ * `totalMs` is the sum of per-item classifier latencies, which is several times larger because
+ * `CONCURRENCY` items are in flight at once; divided by `timed` it answers "how long does Jev
+ * take on one bookmark". Presenting either without the other is misleading.
+ */
+export type RunMetrics = {
+  startedAt: number;
+  /** Set when the run ends, whether it finished or was stopped. */
+  finishedAt?: number;
+  /** Items that went to the classifier this run. Cache hits are excluded. */
+  timed: number;
+  /** Sum of per-item latencies, ms. */
+  totalMs: number;
+};
+
 export type SorterTab = "all" | "needs-look";
 export type SorterStatus = "empty" | "parsing" | "picking" | "classifying" | "ready";
 export type ClassifierMode = "jev" | "sample" | "unknown";
@@ -132,6 +164,8 @@ export type SortSession = {
   status: SorterStatus;
   mode: ClassifierMode;
   progress: { done: number; total: number; failed: number };
+  /** Absent until a run has happened. Optional so old saved sessions load without a version bump. */
+  run?: RunMetrics;
 };
 
 export type SorterAction =

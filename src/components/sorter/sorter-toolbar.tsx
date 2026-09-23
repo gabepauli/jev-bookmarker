@@ -1,6 +1,6 @@
 "use client";
 
-import { Separator, Slider, ToggleGroup } from "radix-ui";
+import { ToggleGroup } from "radix-ui";
 
 import { cn } from "@/lib/cn";
 import type { SorterTab } from "@/lib/sorter/types";
@@ -10,8 +10,6 @@ export function SorterToolbar({
   onTabChange,
   totalCount,
   needsLookCount,
-  threshold,
-  onThresholdChange,
   onExport,
   onEditFolders,
   canExport,
@@ -20,14 +18,10 @@ export function SorterToolbar({
   onTabChange: (tab: SorterTab) => void;
   totalCount: number;
   needsLookCount: number;
-  threshold: number;
-  onThresholdChange: (value: number) => void;
   onExport: () => void;
   onEditFolders: () => void;
   canExport: boolean;
 }) {
-  const percent = Math.round(threshold * 100);
-
   return (
     // Two groups under justify-between rather than one long row with ml-auto: when the row wraps,
     // the actions move as a block instead of leaving a hole where the middle used to be. No card
@@ -49,37 +43,6 @@ export function SorterToolbar({
           <FilterButton value="all" label="All" count={totalCount} />
           <FilterButton value="needs-look" label="Needs a look" count={needsLookCount} />
         </ToggleGroup.Root>
-
-        <Separator.Root
-          orientation="vertical"
-          className="hidden h-6 w-px bg-border sm:block"
-        />
-
-        <div className="flex items-center gap-3">
-          <span id="threshold-label" className="text-sm whitespace-nowrap text-muted">
-            Ask me when Jev is under
-          </span>
-          <Slider.Root
-            value={[percent]}
-            onValueChange={([value]) => onThresholdChange(value / 100)}
-            min={0}
-            max={100}
-            step={5}
-            className="relative flex h-5 w-32 touch-none items-center select-none"
-          >
-            <Slider.Track className="relative h-px grow bg-border">
-              <Slider.Range className="absolute h-full bg-foreground" />
-            </Slider.Track>
-            <Slider.Thumb
-              aria-labelledby="threshold-label"
-              // Without this a screen reader announces a bare "60".
-              aria-valuetext={`${percent} percent`}
-              className="block size-3 rounded-full bg-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-            />
-          </Slider.Root>
-          {/* Fixed width and tabular figures, or the row twitches as you drag. */}
-          <span className="w-9 text-sm font-medium tabular-nums">{percent}%</span>
-        </div>
       </div>
 
       <div className="flex items-center gap-2">

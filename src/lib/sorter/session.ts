@@ -1,4 +1,4 @@
-import { DEFAULT_FOLDERS, FALLBACK_FOLDER_ID, taxonomyHash } from "@/lib/sorter/taxonomy";
+import { DEFAULT_FOLDERS, fallbackFolderId, taxonomyHash } from "@/lib/sorter/taxonomy";
 import type {
   ItemState,
   ParsedBookmark,
@@ -49,6 +49,23 @@ export function needsLook(item: ItemState | undefined, threshold: number): boole
   if (item.assignedFolder) return false;
   const confidence = item.suggestion?.confidence;
   return confidence !== undefined && confidence < threshold;
+}
+
+/**
+ * Bookmarks the classifier has not placed yet — what a Start button has left to do.
+ *
+ * An errored item counts: it still has no answer, and the whole point of resuming is to go back
+ * for it. One the user placed by hand does not — deciding is what settles a bookmark, and
+ * re-asking would overwrite them.
+ */
+export function unsortedBookmarks(
+  bookmarks: ParsedBookmark[],
+  items: Record<string, ItemState>,
+): ParsedBookmark[] {
+  return bookmarks.filter((bookmark) => {
+    const item = items[bookmark.id];
+    return !item?.suggestion && !item?.assignedFolder;
+  });
 }
 
 /** Bookmarks per folder id, in the taxonomy's order, including folders that ended up empty. */
@@ -124,6 +141,8 @@ export function sorterReducer(state: SortSession, action: SorterAction): SortSes
         mode: "unknown",
         tab: "all",
         progress: { done: 0, total: action.result.bookmarks.length, failed: 0 },
+        // Last import's timing describes bookmarks that are no longer here.
+        run: undefined,
       };
     }
 
@@ -135,12 +154,15 @@ export function sorterReducer(state: SortSession, action: SorterAction): SortSes
         ...state,
         status: "classifying",
         progress: { done: 0, total: action.total, failed: 0 },
+        run: { startedAt: Date.now(), timed: 0, totalMs: 0 },
       };
 
     case "classify/resolved": {
       const items = { ...state.items };
       let done = state.progress.done;
       let failed = state.progress.failed;
+      let timed = state.run?.timed ?? 0;
+      let totalMs = state.run?.totalMs ?? 0;
 
       for (const result of action.results) {
         const previous = items[result.id];
@@ -148,11 +170,21 @@ export function sorterReducer(state: SortSession, action: SorterAction): SortSes
         done += 1;
         if (result.ok) {
           items[result.id] = { ...previous, suggestion: result.suggestion, error: undefined };
+          // Undefined for a cache hit and for the stand-in, which is exactly what keeps both out
+          // of the average rather than reporting them as instant work.
+          if (result.ms !== undefined) {
+            timed += 1;
+            totalMs += result.ms;
+          }
         } else {
           failed += 1;
           items[result.id] = { ...previous, error: result.error };
         }
       }
+
+      // A single-row retry resolves outside a run. It must still land its suggestion, but letting
+      // it touch the counters would push `done` past `total` and restate a finished run's timing.
+      const tracking = state.status === "classifying";
 
       return {
         ...state,
@@ -160,12 +192,17 @@ export function sorterReducer(state: SortSession, action: SorterAction): SortSes
         mode: action.mode,
         // The taxonomy these suggestions were produced against, so an edit can expire them.
         taxonomyHash: taxonomyHash(state.folders),
-        progress: { ...state.progress, done, failed },
+        progress: tracking ? { ...state.progress, done, failed } : state.progress,
+        run: tracking && state.run ? { ...state.run, timed, totalMs } : state.run,
       };
     }
 
     case "classify/finished":
-      return { ...state, status: "ready" };
+      return {
+        ...state,
+        status: "ready",
+        run: state.run ? { ...state.run, finishedAt: Date.now() } : undefined,
+      };
 
     case "item/assigned": {
       const previous = state.items[action.id];
@@ -198,9 +235,7 @@ export function sorterReducer(state: SortSession, action: SorterAction): SortSes
       // rather than silently vanishing; suggestions pointing at it are dropped so the row
       // returns to unsorted and can be re-asked.
       const live = new Set(action.folders.map((folder) => folder.id));
-      const fallback = live.has(FALLBACK_FOLDER_ID)
-        ? FALLBACK_FOLDER_ID
-        : action.folders[action.folders.length - 1]?.id;
+      const fallback = fallbackFolderId(action.folders);
 
       const items: Record<string, ItemState> = {};
       for (const [id, item] of Object.entries(state.items)) {

@@ -10,10 +10,10 @@ import {
   useState,
 } from "react";
 
-import { ClassifyProgress } from "@/components/sorter/classify-progress";
 import { FolderSection } from "@/components/sorter/folder-section";
 import { FolderSidebar } from "@/components/sorter/folder-sidebar";
 import { ImportStep, type ParsedFile, pickableFolders } from "@/components/sorter/import-step";
+import { RunPanel } from "@/components/sorter/run-panel";
 import { SorterHeader } from "@/components/sorter/sorter-header";
 import { SorterToolbar } from "@/components/sorter/sorter-toolbar";
 import { SourceFolderDialog } from "@/components/sorter/source-folder-dialog";
@@ -30,6 +30,7 @@ import {
   sorterReducer,
   suggestionsAreStale,
   UNSORTED_ID,
+  unsortedBookmarks,
 } from "@/lib/sorter/session";
 import type { ParsedBookmark, SourceFolder, TargetFolder } from "@/lib/sorter/types";
 
@@ -64,20 +65,33 @@ export function SorterApp({
     if (session.hydrated) saveSessionSoon(session);
   }, [session]);
 
+  /**
+   * Classifies without claiming to be a run: no progress, no timing, no Stop.
+   *
+   * A single-row retry goes through here so it lands its answer without resetting the bar and
+   * the metrics of whatever run it interrupts. It deliberately does not consult `cancelled`
+   * either — that ref belongs to the run, and a retry that inherited a Stop from ten minutes ago
+   * would return having quietly done nothing.
+   */
+  const classifyInto = useCallback(
+    async (bookmarks: ParsedBookmark[], folders: TargetFolder[], isCancelled?: () => boolean) => {
+      await classifyBookmarks(bookmarks, folders, jevConfigured, {
+        onBatch: (results, mode) => dispatch({ type: "classify/resolved", results, mode }),
+        isCancelled,
+      });
+    },
+    [jevConfigured],
+  );
+
   const runClassification = useCallback(
     async (bookmarks: ParsedBookmark[], folders: TargetFolder[]) => {
       if (bookmarks.length === 0) return;
       cancelled.current = false;
       dispatch({ type: "classify/started", total: bookmarks.length });
-
-      await classifyBookmarks(bookmarks, folders, jevConfigured, {
-        onBatch: (results, mode) => dispatch({ type: "classify/resolved", results, mode }),
-        isCancelled: () => cancelled.current,
-      });
-
+      await classifyInto(bookmarks, folders, () => cancelled.current);
       dispatch({ type: "classify/finished" });
     },
-    [jevConfigured],
+    [classifyInto],
   );
 
   const handlePickSource = useCallback(
@@ -85,10 +99,11 @@ export function SorterApp({
       if (!parsed) return;
       const result = scopeToFolder(parsed, source);
       setParsed(undefined);
+      // Import and stop. Sorting costs money and sends every title to a model, so it waits to be
+      // asked — the run panel picks it up from here.
       dispatch({ type: "session/imported", result, source });
-      void runClassification(result.bookmarks, session.folders);
     },
-    [parsed, runClassification, session.folders],
+    [parsed],
   );
 
   const handleAssign = useCallback((id: string, folderId: string) => {
@@ -108,10 +123,26 @@ export function SorterApp({
   const handleRetry = useCallback(
     (id: string) => {
       const bookmark = session.bookmarks.find((candidate) => candidate.id === id);
-      if (bookmark) void runClassification([bookmark], session.folders);
+      if (bookmark) void classifyInto([bookmark], session.folders);
     },
-    [runClassification, session.bookmarks, session.folders],
+    [classifyInto, session.bookmarks, session.folders],
   );
+
+  const handleStart = useCallback(() => {
+    // Two runs at once would interleave their batches into one progress bar and one set of
+    // timings, neither of which would mean anything.
+    if (session.status === "classifying") return;
+    const pending = unsortedBookmarks(session.bookmarks, session.items);
+    void runClassification(
+      pending.length > 0 ? pending : session.bookmarks,
+      session.folders,
+    );
+  }, [runClassification, session.bookmarks, session.folders, session.items, session.status]);
+
+  const handleStop = useCallback(() => {
+    cancelled.current = true;
+    dispatch({ type: "classify/finished" });
+  }, []);
 
   const handleStartOver = useCallback(() => {
     clearSession();
@@ -140,6 +171,10 @@ export function SorterApp({
       session.bookmarks.filter((bookmark) => needsLook(session.items[bookmark.id], threshold))
         .length,
     [session.bookmarks, session.items, threshold],
+  );
+  const pendingCount = useMemo(
+    () => unsortedBookmarks(session.bookmarks, session.items).length,
+    [session.bookmarks, session.items],
   );
   const stale = useMemo(() => suggestionsAreStale(session), [session]);
 
@@ -187,31 +222,30 @@ export function SorterApp({
         </div>
       )}
 
+      {/* Raw threshold here, deferred below: the slider has to track the pointer exactly. */}
+      <RunPanel
+        status={session.status}
+        pendingCount={pendingCount}
+        totalCount={session.bookmarks.length}
+        progress={session.progress}
+        run={session.run}
+        threshold={session.threshold}
+        onThresholdChange={(value) => dispatch({ type: "threshold/changed", value })}
+        onStart={handleStart}
+        onStop={handleStop}
+      />
+
       <SorterToolbar
         tab={session.tab}
         onTabChange={(tab) => dispatch({ type: "tab/changed", tab })}
         totalCount={session.bookmarks.length}
         needsLookCount={needsLookCount}
-        threshold={session.threshold}
-        onThresholdChange={(value) => dispatch({ type: "threshold/changed", value })}
         onExport={() => downloadExport(session)}
         onEditFolders={() => setEditingFolders(true)}
         canExport={session.status !== "classifying"}
       />
 
-      {session.status === "classifying" && (
-        <ClassifyProgress
-          done={session.progress.done}
-          total={session.progress.total}
-          failed={session.progress.failed}
-          onCancel={() => {
-            cancelled.current = true;
-            dispatch({ type: "classify/finished" });
-          }}
-        />
-      )}
-
-      <div className="grid gap-6 sm:grid-cols-[14rem_minmax(0,1fr)]">
+      <div className="grid gap-x-8 gap-y-6 sm:grid-cols-[14rem_minmax(0,1fr)]">
         <FolderSidebar
           folders={session.folders}
           counts={counts}
@@ -219,7 +253,7 @@ export function SorterApp({
           onDropBookmark={handleDrop}
         />
 
-        <div className="min-w-0 space-y-10">
+        <div className="min-w-0 space-y-12">
           {session.folders.map((folder) => {
             const bookmarks = visible(groups.get(folder.id) ?? []);
             if (bookmarks.length === 0) return null;

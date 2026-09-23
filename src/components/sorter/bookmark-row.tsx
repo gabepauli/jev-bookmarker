@@ -68,7 +68,7 @@ function BookmarkRowImpl({
       draggable
       onDragStart={handleDragStart}
       className={cn(
-        "group grid gap-x-4 gap-y-2 border-t border-border py-3",
+        "group grid gap-x-6 gap-y-3 border-t border-border py-4",
         "grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto]",
         // A rule in the margin rather than a filled row. At a high threshold well over half the
         // list is flagged, and a fill turns the whole page orange; a 2px edge still scans in bulk.
@@ -89,7 +89,7 @@ function BookmarkRowImpl({
           {bookmark.title}
         </a>
 
-        <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+        <p className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
           <span className="truncate">{hostname(bookmark.url)}</span>
           <Tooltip.Root>
             <Tooltip.Trigger asChild>
@@ -116,7 +116,7 @@ function BookmarkRowImpl({
         </p>
 
         {item?.error && (
-          <p className="mt-2 flex flex-wrap items-center gap-2 text-xs text-accent text-pretty">
+          <p className="mt-3 flex flex-wrap items-center gap-2 text-xs text-accent text-pretty">
             {item.error}
             <button
               type="button"
@@ -130,7 +130,7 @@ function BookmarkRowImpl({
         )}
 
         {needsLook && suggestion?.distribution && !overridden && (
-          <div className="mt-2">
+          <div className="mt-3">
             <TopPicks
               distribution={suggestion.distribution}
               folders={folders}
@@ -141,7 +141,7 @@ function BookmarkRowImpl({
         )}
       </div>
 
-      <div className="flex items-center gap-3 justify-self-start sm:flex-col sm:items-end sm:justify-self-end sm:gap-1.5">
+      <div className="flex items-center gap-3 justify-self-start sm:flex-col sm:items-end sm:justify-self-end sm:gap-2">
         {suggestion && !overridden && (
           <Confidence confidence={suggestion.confidence} belowThreshold={needsLook} />
         )}

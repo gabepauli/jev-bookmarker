@@ -28,20 +28,41 @@ drop the file on `/`.
 
 1. **Pick one folder to sort.** An export is the whole bookmark bar. Sorting is scoped to one
    subtree; everything else in the file is left alone.
-2. **Jev files each link** into one of the target folders. It sees the URL, the title, and the
-   folder the bookmark already lived in — no page is fetched.
-3. **Review.** Anything Jev was less sure about than your threshold is highlighted and listed
+2. **Press Sort.** Nothing is sent anywhere until you do — importing lands every bookmark
+   unsorted and waits. Stop mid-run and the button offers the remainder rather than starting
+   over. The panel reports what the run cost: wall time, and the average Jev spent per bookmark.
+3. **Jev files each link** into one of the target folders. It sees the URL and the title — no
+   page is fetched, and the folder the bookmark came from is deliberately not sent: a tree worth
+   re-sorting is usually one whose folder names are noise, and a hint that agrees with a thin
+   title mostly inflates confidence past the point where you would have been asked.
+4. **Review.** Anything Jev was less sure about than your threshold is highlighted and listed
    under *Needs a look*, with its runners-up one click away. Drag a row onto a folder, use its
    Move menu, or click a top pick. Your moves always win and survive re-sorting.
-4. **Export.** You get a standalone bookmarks file: one folder holding your target folders, ready
+5. **Export.** You get a standalone bookmarks file: one folder holding your target folders, ready
    to import back into the browser.
 
 **Edit folders** changes the taxonomy. The description is not a label — it is the text Jev reads
 when deciding, so be concrete about what belongs there. Changing one retires the suggestions made
 against the old wording and offers a re-sort; your manual moves are never discarded.
 
+**Upload JSON**, in the same dialog, replaces the whole list from a file — a list of objects with
+a `name` and a `description`, up to forty of them:
+
+```json
+[
+  { "name": "Accessibility", "description": "WCAG, ARIA, screen readers, inclusive language." },
+  { "name": "Learning", "description": "Courses, study guides, blogs and publications." }
+]
+```
+
+An optional `"id"` per folder is what makes a file re-uploadable without cost: ids are the
+identity cached suggestions are filed under, so a file that keeps them keeps its history, while
+one that omits them slugifies fresh ids and starts over. Nothing is saved until you press
+*Save folders*, so a file you did not mean to load is a Cancel away.
+
 Two target folders are routing decisions rather than topics — *Move to UI Links* and *Not design*
-— and are written beside the sorted folder rather than inside it.
+— and are written beside the sorted folder rather than inside it. That pair is specific to the
+default taxonomy; an uploaded one nests everything inside the sorted folder.
 
 Bookmarks in other languages are filed by topic like everything else. A `PT` badge on the row
 tells you what you are looking at, and the summary line counts them, but language never changes

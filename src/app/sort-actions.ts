@@ -97,8 +97,20 @@ export async function classifyBatchAction(
         continue;
       }
 
+      // Timed from here rather than around each attempt, so a retried item reports what it
+      // actually cost — both calls and the delay between them — instead of only the lucky one.
+      // Only the real classifier is timed: the stand-in is a synchronous keyword match, and
+      // reporting its ~0ms as a latency would drag the average to nothing.
+      const startedAt = performance.now();
+      const elapsed = () => (live ? Math.round(performance.now() - startedAt) : undefined);
+
       try {
-        results[index] = { id: item.id, ok: true, suggestion: await classify(item) };
+        results[index] = {
+          id: item.id,
+          ok: true,
+          suggestion: await classify(item),
+          ms: elapsed(),
+        };
         continue;
       } catch (error) {
         if (error instanceof JevUnavailableError) {
@@ -110,7 +122,12 @@ export async function classifyBatchAction(
         // One retry covers a rate limit or a dropped connection; a second failure is real.
         await sleep(RETRY_DELAY_MS);
         try {
-          results[index] = { id: item.id, ok: true, suggestion: await classify(item) };
+          results[index] = {
+            id: item.id,
+            ok: true,
+            suggestion: await classify(item),
+            ms: elapsed(),
+          };
         } catch (retryError) {
           console.error(`Jev failed to place ${item.url}`, retryError);
           results[index] = { id: item.id, ok: false, error: describe(retryError) };

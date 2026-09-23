@@ -2,7 +2,7 @@
  * Checks Jev's 16-way folder choice outside the app.
  *
  *   AI_GATEWAY_API_KEY=... npm run jev:folder-smoke
- *   AI_GATEWAY_API_KEY=... npm run jev:folder-smoke -- "<url>" "<title>" "<previous folder>"
+ *   AI_GATEWAY_API_KEY=... npm run jev:folder-smoke -- "<url>" "<title>"
  *
  * The open question this answers: a `choice` answer's `probabilities` is optional, and the app's
  * "N% sure" meter, its review threshold, and its top-picks chips all come from that
@@ -12,25 +12,27 @@
 import { gateway } from "@ai-sdk/gateway";
 import { experimental_evaluate as evaluate } from "ai";
 
-import { buildCriteria, DEFAULT_FOLDERS } from "../src/lib/sorter/taxonomy";
+import {
+  buildCriteria,
+  DEFAULT_FOLDERS,
+  FOLDER_QUESTION_INSTRUCTIONS,
+} from "../src/lib/sorter/taxonomy";
 
 const MODEL_ID = "typesafe-ai/jev";
 
+/** Mirrors `classifyPlacement`'s state exactly — url and title, no previous folder. */
 const SAMPLES = [
   {
     url: "https://www.nngroup.com/articles/user-story-mapping/",
     title: "Mapping User Stories in Agile",
-    previousFolder: "Articles",
   },
   {
     url: "https://uxdesign.cc/the-rainbow-sheet-a-visual-method-for-research-analysis-a7e7d2011058",
     title: "The rainbow sheet: a visual method for research analysis",
-    previousFolder: "Articles",
   },
   {
     url: "https://coolors.co/",
     title: "Coolors - The super fast color palettes generator!",
-    previousFolder: "🧰 Tools",
   },
 ];
 
@@ -40,9 +42,8 @@ async function main() {
     process.exit(1);
   }
 
-  const [url, title, previousFolder] = process.argv.slice(2);
-  const samples =
-    url && title ? [{ url, title, previousFolder: previousFolder ?? "" }] : SAMPLES;
+  const [url, title] = process.argv.slice(2);
+  const samples = url && title ? [{ url, title }] : SAMPLES;
 
   const folders = [...DEFAULT_FOLDERS];
   const criteria = buildCriteria(folders);
@@ -55,8 +56,7 @@ async function main() {
       questions: {
         folder: {
           type: "choice",
-          instructions:
-            "Which single folder should this bookmark be filed in? The bookmark's previous folder is a strong hint but is often wrong or too general — prefer the folder that matches what the page is actually about.",
+          instructions: FOLDER_QUESTION_INSTRUCTIONS,
           criteria,
         },
       },
@@ -64,7 +64,6 @@ async function main() {
 
     const { choice, probabilities } = result.answers.folder;
     console.log(`${state.title}`);
-    console.log(`  was in: ${state.previousFolder || "(none)"}`);
     console.log(`  choice: ${choice}`);
 
     if (!probabilities) {

@@ -4,7 +4,11 @@ import { gateway } from "@ai-sdk/gateway";
 import { experimental_evaluate as evaluate } from "ai";
 
 import { DISTRIBUTION_SIZE } from "@/lib/sorter/sample-classifier";
-import { buildCriteria, FALLBACK_FOLDER_ID } from "@/lib/sorter/taxonomy";
+import {
+  buildCriteria,
+  fallbackFolderId,
+  FOLDER_QUESTION_INSTRUCTIONS,
+} from "@/lib/sorter/taxonomy";
 import type {
   ClassifyRequestItem,
   FolderSuggestion,
@@ -121,9 +125,14 @@ export function isLongForm(probability: number): boolean {
  * against the live taxonomy before it is trusted, and an unrecognized id falls back rather than
  * flowing into state as a folder that does not exist.
  *
- * The state is deliberately just the URL, the title and the folder the bookmark already lived in.
- * Fetching each page for an excerpt would add a network round trip per bookmark for a signal
- * weaker than the folder the user themselves filed it under.
+ * The state is deliberately just the URL and the title. Fetching each page for an excerpt would
+ * add a network round trip per bookmark, and the folder the bookmark already lived in is not sent
+ * either: a source tree worth re-sorting is usually a source tree whose folders are noise, and the
+ * damage is less the wrong folder than the confidence. A hint agreeing with a thin title pushes
+ * the probability up, the row clears the review threshold, and it never gets shown to the user —
+ * so a bad hint costs exactly the review that would have caught it. The stand-in in
+ * `sample-classifier.ts` still scores it; that is a keyword matcher with nothing else to go on,
+ * not a model of this one.
  */
 export async function classifyPlacement(
   item: ClassifyRequestItem,
@@ -143,22 +152,22 @@ export async function classifyPlacement(
     state: {
       url: item.url,
       title: item.title,
-      previousFolder: item.originalFolder,
     },
     questions: {
       folder: {
         type: "choice",
-        instructions:
-          "Which single folder should this bookmark be filed in? The bookmark's previous folder is a strong hint but is often wrong or too general — prefer the folder that matches what the page is actually about.",
+        instructions: FOLDER_QUESTION_INSTRUCTIONS,
         criteria: buildCriteria(folders),
       },
     },
   });
 
+  // Derived from the taxonomy in hand, not a constant: a user-supplied folder list need not
+  // contain the default fallback, and an id nothing recognises would strand the bookmark.
   const known = new Set(folders.map((folder) => folder.id));
   const chosen = known.has(answers.folder.choice)
     ? answers.folder.choice
-    : FALLBACK_FOLDER_ID;
+    : fallbackFolderId(folders);
 
   // `probabilities` is optional on a choice answer. Everything downstream renders an explicit
   // "no distribution" state rather than a NaN percentage, so leave it undefined when absent.

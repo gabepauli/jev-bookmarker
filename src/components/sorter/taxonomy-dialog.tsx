@@ -1,9 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { AlertDialog, Dialog, ScrollArea } from "radix-ui";
 
 import { cn } from "@/lib/cn";
+import {
+  foldersMissingDescriptions,
+  parseTaxonomyJson,
+} from "@/lib/sorter/taxonomy-file";
 import { uniqueFolderId } from "@/lib/sorter/taxonomy";
 import type { TargetFolder } from "@/lib/sorter/types";
 
@@ -27,6 +31,9 @@ export function TaxonomyDialog({
 }) {
   const [draft, setDraft] = useState<TargetFolder[]>(folders);
   const [pendingDelete, setPendingDelete] = useState<TargetFolder | undefined>();
+  const [uploadError, setUploadError] = useState<string | undefined>();
+  const [uploaded, setUploaded] = useState<{ name: string; count: number } | undefined>();
+  const fileRef = useRef<HTMLInputElement>(null);
 
   // Reopening should show what is in force now, not whatever was abandoned last time. Adjusting
   // during render rather than in an effect: React re-runs this component before committing, so
@@ -34,7 +41,11 @@ export function TaxonomyDialog({
   const [syncedTo, setSyncedTo] = useState(open);
   if (open !== syncedTo) {
     setSyncedTo(open);
-    if (open) setDraft(folders);
+    if (open) {
+      setDraft(folders);
+      setUploadError(undefined);
+      setUploaded(undefined);
+    }
   }
 
   const update = (id: string, patch: Partial<TargetFolder>) =>
@@ -61,7 +72,22 @@ export function TaxonomyDialog({
       },
     ]);
 
+  const handleFile = useCallback(async (file: File) => {
+    const result = parseTaxonomyJson(await file.text());
+    if (!result.ok) {
+      setUploadError(result.error);
+      setUploaded(undefined);
+      return;
+    }
+    // Replaces the draft, not the saved taxonomy. Cancel is still a real undo, and you get to
+    // read what arrived — blank descriptions and all — before any of it takes effect.
+    setDraft(result.folders);
+    setUploadError(undefined);
+    setUploaded({ name: file.name, count: result.folders.length });
+  }, []);
+
   const valid = draft.length > 0 && draft.every((folder) => folder.name.trim().length > 0);
+  const blank = foldersMissingDescriptions(draft).length;
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -144,29 +170,81 @@ export function TaxonomyDialog({
             </ScrollArea.Scrollbar>
           </ScrollArea.Root>
 
-          <div className="flex flex-wrap items-center gap-2 border-t border-border px-5 py-3">
-            <button
-              type="button"
-              onClick={addFolder}
-              className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-border/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-            >
-              Add folder
-            </button>
-            <div className="ml-auto flex items-center gap-2">
-              <Dialog.Close className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-border/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
-                Cancel
-              </Dialog.Close>
+          <div className="border-t border-border px-5 py-3">
+            {/* One slot, so an error and a confirmation never stack and push the buttons around. */}
+            {uploadError ? (
+              <p role="alert" className="mb-2.5 text-xs text-accent text-pretty">
+                {uploadError}
+              </p>
+            ) : uploaded ? (
+              <p role="status" className="mb-2.5 text-xs text-muted text-pretty">
+                Loaded {uploaded.count} folder{uploaded.count === 1 ? "" : "s"} from{" "}
+                {uploaded.name}. Nothing is saved until you press Save folders.
+                {blank > 0 && (
+                  <>
+                    {" "}
+                    {blank} {blank === 1 ? "has" : "have"} no description — that is the text Jev
+                    reads when deciding.
+                  </>
+                )}
+              </p>
+            ) : null}
+
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
-                disabled={!valid}
-                onClick={() => {
-                  onSave(draft.map((folder) => ({ ...folder, name: folder.name.trim() })));
-                  onOpenChange(false);
-                }}
-                className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-40"
+                onClick={addFolder}
+                className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-border/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               >
-                Save folders
+                Add folder
               </button>
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                aria-describedby="upload-json-hint"
+                className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-border/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              >
+                Upload JSON
+              </button>
+              <span id="upload-json-hint" className="sr-only">
+                Replaces every folder in this list with the contents of the file. A list of objects
+                with a name and a description.
+              </span>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="application/json,.json"
+                aria-label="Folders JSON file"
+                className="sr-only"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (file) void handleFile(file);
+                  // Reset so choosing the same file twice still fires a change.
+                  event.target.value = "";
+                }}
+              />
+              <div className="ml-auto flex items-center gap-2">
+                <Dialog.Close className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-border/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+                  Cancel
+                </Dialog.Close>
+                <button
+                  type="button"
+                  disabled={!valid}
+                  aria-describedby={valid ? undefined : "save-folders-disabled"}
+                  onClick={() => {
+                    onSave(draft.map((folder) => ({ ...folder, name: folder.name.trim() })));
+                    onOpenChange(false);
+                  }}
+                  className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-40"
+                >
+                  Save folders
+                </button>
+                {!valid && (
+                  <span id="save-folders-disabled" className="sr-only">
+                    Every folder needs a name.
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </Dialog.Content>

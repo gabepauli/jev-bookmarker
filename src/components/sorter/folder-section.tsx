@@ -33,7 +33,7 @@ export function FolderSection({
       aria-labelledby={`folder-${id}-heading`}
       className="section-defer scroll-mt-4"
     >
-      <header className="pb-2">
+      <header className="pb-3">
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <h2 id={`folder-${id}-heading`} className="text-sm font-medium text-balance">
             {name}
